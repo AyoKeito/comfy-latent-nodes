@@ -17,7 +17,7 @@ This repository contains custom nodes for ComfyUI that facilitate saving and loa
 
    ```bash
    cd path/to/ComfyUI/custom_nodes
-   git clone https://github.com/Velour-Fog/comfy-latent-nodes.git```
+   git clone https://github.com/Velour-Fog/comfy-latent-nodes.git
 2. **Restart ComfyUI**:
 
    Restart ComfyUI to load the new custom nodes.
