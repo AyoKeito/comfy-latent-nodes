@@ -9,8 +9,7 @@ class CustomSaveLatent:
         return {
             "required": {
                 "samples": ("LATENT", ),
-                "filename": ("STRING", {"default": "templatent"}),
-                "save_directory": ("STRING", {"default": "custom"})
+                "file_path": ("STRING", {"default": "input/temp.latent"})
             },
             "hidden": {
                 "prompt": "PROMPT",
@@ -23,14 +22,9 @@ class CustomSaveLatent:
     OUTPUT_NODE = True
     CATEGORY = "Custom"
 
-    def save(self, samples, filename="templatent", save_directory="custom", prompt=None, extra_pnginfo=None):
-        output_dir = save_directory
-
-        # Ensure the output directory exists
-        os.makedirs(output_dir, exist_ok=True)
-
-        # Construct the full file path
-        file_path = os.path.join(output_dir, f"{filename}.latent")
+    def save(self, samples, file_path="input/temp.latent", prompt=None, extra_pnginfo=None):
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         # Prepare metadata
         prompt_info = json.dumps(prompt) if prompt else ""
@@ -39,8 +33,10 @@ class CustomSaveLatent:
             for x in extra_pnginfo:
                 metadata[x] = json.dumps(extra_pnginfo[x])
 
-        # Save the latent
+        # Save the latent (overwriting if it exists)
         output = {"latent_tensor": samples["samples"], "latent_format_version_0": torch.tensor([])}
+        if os.path.exists(file_path):
+            os.remove(file_path)  # Remove the existing file
         comfy.utils.save_torch_file(output, file_path, metadata=metadata)
         return {}
 
