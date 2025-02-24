@@ -1,56 +1,52 @@
 import os
-import hashlib
 import safetensors.torch
+import comfy.utils
+import hashlib
 
 class CustomLoadLatent:
     @classmethod
     def INPUT_TYPES(cls):
-        load_directory = "custom"
-        # Ensure the input directory exists
-        os.makedirs(load_directory, exist_ok=True)
-
-        files = [
-            f for f in os.listdir(load_directory)
-            if os.path.isfile(os.path.join(load_directory, f)) and f.endswith(".latent")
-        ]
-        # Handle case where no files are found
-        if not files:
-            files = ["No latent files found"]
-
         return {
             "required": {
-                "filename": (sorted(files), ),
-                "load_directory": ("STRING", {"default": "custom"})
+                "file_path": ("STRING", {"default": "input/temp.latent"})
             }
         }
 
     CATEGORY = "Custom"
-    RETURN_TYPES = ("LATENT", )
+
+    RETURN_TYPES = ("LATENT",)
     FUNCTION = "load"
+    OUTPUT_NODE = True
 
-    def load(self, filename="templatent.latent", load_directory="custom"):
-        input_dir = load_directory
-        file_path = os.path.join(input_dir, filename)
-        if filename == "No latent files found":
-            raise FileNotFoundError(f"No latent files found in directory: {input_dir}")
+    def load(self, file_path):
+        # Ensure the file exists and is the latest version
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File {file_path} does not exist.")
 
+        # Reload the file to ensure it's up-to-date
+        with open(file_path, 'rb') as f:
+            data = f.read()
+        
+        # Load the latent file
         latent = safetensors.torch.load_file(file_path, device="cpu")
-        multiplier = 1.0 if "latent_format_version_0" in latent else 1.0 / 0.18215
+        multiplier = 1.0
+        if "latent_format_version_0" not in latent:
+            multiplier = 1.0 / 0.18215
         samples = {"samples": latent["latent_tensor"].float() * multiplier}
-        return (samples, )
+        return (samples,)
 
     @classmethod
-    def IS_CHANGED(cls, filename):
-        image_path = os.path.join("custom", filename)
+    def IS_CHANGED(cls, file_path):
+        image_path = file_path
         m = hashlib.sha256()
         with open(image_path, 'rb') as f:
             m.update(f.read())
         return m.digest().hex()
 
     @classmethod
-    def VALIDATE_INPUTS(cls, filename):
-        if not os.path.exists(os.path.join("custom", filename)):
-            return f"Invalid latent file: {filename}"
+    def VALIDATE_INPUTS(cls, file_path):
+        if not os.path.exists(file_path):
+            return "Invalid latent file: {}".format(file_path)
         return True
 
 # Define NODE_CLASS_MAPPINGS
