@@ -28,14 +28,9 @@ This repository contains custom nodes for ComfyUI that facilitate saving and loa
 
 - **Inputs**:
   - `samples`: The latent representation to be saved.
-  - `filename`: The name of the file to save the latent as (default: `"templatent"`).
-  - `save_directory`: The directory to save the latent in (default: `"custom"`).
+  - `file_path`: The full path to save the latent file (e.g., `input/temp.latent`).
 
 #### CustomLoadLatent Node
 
 - **Inputs**:
-  - `filename`: The name of the latent file to load.
-  - `load_directory`: The directory to load the latent from (default: `"custom"`).
-
----
-
+  - `file_path`: The full path to the latent file to load (e.g., `input/temp.latent`).
