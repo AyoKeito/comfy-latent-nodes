@@ -34,3 +34,30 @@ This repository contains custom nodes for ComfyUI that facilitate saving and loa
 
 - **Inputs**:
   - `file_path`: The full path to the latent file to load (e.g., `input/temp.latent`).
+
+# Changes to CustomLatentNodes in this fork:
+
+## Path Handling
+- ✅ Added path resolution helpers to standardize path handling
+- ✅ Automatic relative/absolute path detection
+- ✅ Cross-platform path normalization with `os.path.normpath()`
+
+## Error Handling
+- ✅ Added comprehensive try/except blocks with detailed error messages
+- ✅ Permission error recovery when saving (creates alternative filename)
+- ✅ Added validation of safetensors format before loading
+- ✅ Prefixed log messages for easier debugging
+
+## Performance
+- ✅ Implemented chunked file hashing for better performance with large files
+- ✅ Optimized filesystem refresh with minimal reads
+
+## User Experience
+- ✅ Added informative print statements about operation status
+- ✅ Better detection of missing files with unique hash tokens
+- ✅ More descriptive validation error messages
+
+## Code Organization
+- ✅ Extracted common path handling into helper methods
+- ✅ Improved code comments and documentation
+- ✅ Consistent error handling patterns across nodes
