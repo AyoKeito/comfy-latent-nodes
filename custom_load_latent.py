@@ -46,6 +46,7 @@ class CustomLoadLatent:
             _ = f.read(64)  # small read is enough to provoke FS refresh on some setups
 
         # Load latent
+        print(f"[CustomLoadLatent] Loading latent from: {file_path}")
         try:
             latent = safetensors.torch.load_file(file_path, device="cpu")
         except Exception as e:
@@ -60,6 +61,7 @@ class CustomLoadLatent:
             multiplier = 1.0 / 0.18215
 
         samples = {"samples": latent["latent_tensor"].float() * multiplier}
+        print(f"[CustomLoadLatent] Loaded latent: {file_path}")
         return (samples,)
 
     # --- UI change detection ---
