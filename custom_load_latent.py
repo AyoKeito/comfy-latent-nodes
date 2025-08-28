@@ -5,6 +5,7 @@ import hashlib
 import torch
 
 class CustomLoadLatent:
+    
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -26,11 +27,23 @@ class CustomLoadLatent:
 
     @classmethod
     def _resolve_path(cls, file_path: str) -> str:
+        # Security: prevent path traversal attacks
+        if ".." in file_path or file_path.startswith(("../", "..\\")):
+            raise ValueError(f"Path traversal detected in file path: {file_path}")
+        
         # if relative, resolve relative to ComfyUI root
         if not os.path.isabs(file_path):
             file_path = os.path.join(cls._comfy_root(), file_path)
+        
         # normalize for cross-platform use
-        return os.path.normpath(file_path)
+        resolved_path = os.path.normpath(file_path)
+        
+        # Additional security check: ensure resolved path is within ComfyUI root
+        comfy_root = cls._comfy_root()
+        if not resolved_path.startswith(comfy_root):
+            raise ValueError(f"Path outside ComfyUI directory not allowed: {resolved_path}")
+        
+        return resolved_path
 
     # --- node runtime ---
     def load(self, file_path):
@@ -41,12 +54,7 @@ class CustomLoadLatent:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"[CustomLoadLatent] File does not exist: {file_path}")
 
-        # Optional: touch the file contents to ensure latest read (no-op here, but keeps parity with your previous logic)
-        with open(file_path, 'rb') as f:
-            _ = f.read(64)  # small read is enough to provoke FS refresh on some setups
-
         # Load latent
-        print(f"[CustomLoadLatent] Loading latent from: {file_path}")
         try:
             latent = safetensors.torch.load_file(file_path, device="cpu")
         except Exception as e:
@@ -61,6 +69,7 @@ class CustomLoadLatent:
             multiplier = 1.0 / 0.18215
 
         samples = {"samples": latent["latent_tensor"].float() * multiplier}
+        
         print(f"[CustomLoadLatent] Loaded latent: {file_path}")
         return (samples,)
 
